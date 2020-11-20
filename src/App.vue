@@ -1,63 +1,85 @@
 <template>
   <div id="app">
-
-    <aside class="menu">
-      <h5 class="menu-title">Settings</h5>
-      <p class="menu-label">Display</p>
-      <ul class="menu-list">
-        <li><label class="checkbox"><input type="checkbox" v-model="showBoundingBox" @change="showBoundingBox ? addBoundingBox() : removeBoundingBox()"> Show bounding box</label></li>
-        <li><label class="checkbox"><input type="checkbox" v-model="showFlatmap" @change="showFlatmap ? addFlatmap() : removeFlatmap()"> Show flatmap</label></li>
-      </ul>
-      <p class="menu-label">Route Parameters</p>
-      <ul class="menu-list">
-        <li>
-          <div class="field is-horizontal">
-            <div class="field-label is-small">
-              <label class="label">Max Incline</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <p class="control">
-                  <input class="input is-small" type="number" max="1" min="0" v-model="maxIncline" placeholder="0.5">
-                </p>
+    <div class="columns">
+      <div class="column is-2">
+        <aside class="menu">
+          <h5 class="menu-title">Settings</h5>
+          <p class="menu-label">Display</p>
+          <ul class="menu-list">
+            <li><label class="checkbox"><input type="checkbox" v-model="showBoundingBox" @change="showBoundingBox ? addBoundingBox() : removeBoundingBox()"> Show bounding box</label></li>
+            <li><label class="checkbox"><input type="checkbox" v-model="showFlatmap" @change="showFlatmap ? addFlatmap() : removeFlatmap()"> Show flatmap</label></li>
+          </ul>
+          <p class="menu-label">Route Parameters</p>
+          <ul class="menu-list">
+            <li>
+              <div class="field is-horizontal">
+                <div class="field-label is-small">
+                  <label class="label">Max Incline</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <p class="control">
+                      <input class="input is-small" type="number" max="1" min="0" v-model="maxIncline" placeholder="0.5">
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </li>
-        <li>
-          <div class="field is-horizontal">
-            <div class="field-label is-small">
-              <label class="label">Max Decline</label>
-            </div>
-            <div class="field-body">
-              <div class="field">
-                <p class="control">
-                  <input class="input is-small" type="number" max="0" min="-1" v-model="maxDecline" placeholder="-0.5">
-                </p>
+            </li>
+            <li>
+              <div class="field is-horizontal">
+                <div class="field-label is-small">
+                  <label class="label">Max Decline</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <p class="control">
+                      <input class="input is-small" type="number" max="0" min="-1" v-model="maxDecline" placeholder="-0.5">
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </li>
+          </ul>
+          <br>
+          <h5 class="menu-title">Metrics</h5>
+          <p class="menu-label">Performance</p>
+          <ul class="menu-list">
+            <li>Create Bounding Box: {{ timestamps.createBoundingBox }} ms</li>
+            <li>Create Flatmap: {{ timestamps.createFlatmap || '--' }} ms</li>
+            <li>Create Route: {{ timestamps.createRoute || '--' }} ms</li>
+            <li>Get Elevation: {{ timestamps.getElevation || '--' }} ms</li>
+            <li>Get Terrain: {{ timestamps.getTerrain || '--' }} ms</li>
+            <li>Total Time: {{ timestamps.createBoundingBox + timestamps.createFlatmap + timestamps.createRoute || '--' }} ms</li>
+          </ul>
+          <p class="menu-label">Map Details</p>
+          <ul class="menu-list">
+            <li># of nodes: {{ terrainMap ? terrainMap.numNodes : '--' }}</li>
+            <li># of edges: {{ terrainMap ? terrainMap.numEdges : '--' }}</li>
+          </ul>
+        </aside>
+      </div>
+      <div class="column is-10">
+        <div class="main">
+          <div class="content">
+            <h1>Overland Pathfinder</h1>
+            <p>
+              Find a route where there are no roads. Verify the settings on the left, then click on two points
+              on the map to plot a route. (Try and keep the route short, API calls to get elevations are limited)
+            </p>
           </div>
-        </li>
-      </ul>
-    </aside>
 
-    <div class="main container">
-      <div class="content">
-        <h1>Overland Pathfinder</h1>
-        <p>Description goes here.</p>
-      </div>
+          <div class="box map-container">
+            <div class="map" ref="map"></div>
+            <div v-if="isLoading" class="loading">Calculating route...</div>
+          </div>
 
-      <div class="box map-container">
-        <div class="map" ref="map"></div>
-        <div v-if="isLoading" class="loading">Calculating route...</div>
-      </div>
-
-      <div class="content">
-        <p class="help has-text-centered">🛠️  by Adam Gaudreau</p>
-        <p class="help has-text-centered">Map powered by <a href="https://www.esri.com/en-us/home" target="_blank">Esri</a> | Elevation data provided by <a href="https://www.usgs.gov/core-science-systems/national-geospatial-program/national-map" target="_blank">USGS</a> | Terrain data provided by <a href="https://www.geonames.org/" target="_blank">GeoNames</a></p>
+          <div class="content">
+            <p class="help has-text-centered">🛠️  by Adam Gaudreau</p>
+            <p class="help has-text-centered">Map powered by <a href="https://www.esri.com/en-us/home" target="_blank">Esri</a> | Elevation data provided by <a href="https://www.usgs.gov/core-science-systems/national-geospatial-program/national-map" target="_blank">USGS</a> | Terrain data provided by <a href="https://www.geonames.org/" target="_blank">GeoNames</a></p>
+          </div>
+        </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -74,11 +96,12 @@ export default {
       Graphic: {},
 
       view: {},
-      terrainMap: {},
+      terrainMap: undefined,
       currentPoint: {},
       startPoint: {},
       endPoint: {},
       routeDetails: '',
+      timestamps: {},
 
       isLoading: false,
       showBoundingBox: true,
@@ -223,7 +246,7 @@ export default {
       let vm = this;
       vm.isLoading = true;
 
-      vm.terrainMap = new TerrainMap(vm.startPoint, vm.endPoint);
+      vm.terrainMap = new TerrainMap(vm.startPoint, vm.endPoint, vm.maxIncline, vm.maxDecline);
       await vm.terrainMap.generateFlatmap();
       let route = await vm.terrainMap.getRoute();
       vm.isLoading = false;
@@ -250,7 +273,6 @@ export default {
         <b>Route Details</b> <br>
         Total distance: ${(details.distance / 1000).toFixed(3)} km <br>
         ETA: ${Math.floor(details.eta / 60)}m ${Math.ceil(details.eta % 60)}s <br>
-        Est. Calories Burned: ${Math.ceil(details.calories)} <br>
         Elev. delta: ${details.elevationDelta >= 0 ? '+' : ''}${Math.ceil(details.elevationDelta)}m
       `;
 
@@ -269,7 +291,7 @@ export default {
 
       vm.view.graphics.add(routeGraphic);
 
-      console.log(details.timestamps)
+      vm.timestamps = details.timestamps;
     }
 
   },
@@ -289,7 +311,7 @@ html, body {
   background-color: #121212;
 }
 
-h1, p, label {
+h1, p, label, li {
   color: white !important;
 }
 
@@ -308,10 +330,8 @@ h1, p, label {
 }
 
 .menu {
-  position: absolute;
-  top: 0;
-  left: 0;
   height: 100%;
+  width: 100%;
   padding: 16px;
   background-color: #1e1e1e;
 }
@@ -334,6 +354,7 @@ h1, p, label {
 
 .main {
   padding: 40px 0;
+  padding-right: 30px;
 }
 
 .map-container {

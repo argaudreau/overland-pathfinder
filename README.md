@@ -1,4 +1,6 @@
 # overland-pathfinder
+Created by Adam Gaudreau  
+COMP 5030 Fall 2020
 
 ## Project setup
 ```
@@ -15,10 +17,3 @@ npm run serve
 npm run build
 ```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
